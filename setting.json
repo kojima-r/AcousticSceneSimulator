@@ -1,0 +1,33 @@
+{
+	"mics":[
+		{
+			"name":"_m1",
+			"position":[-2.886751345948129, 5]
+		},
+		{
+			"name":"_m2",
+			"position":[-2.886751345948129, -5]
+		},
+		{
+			"name":"_m3",
+			"position":[5.773502691896258, 0]
+		}
+	],
+	"sources":[
+		{
+			"name":"s1",
+			"file":"./data/11_sendaimushikui.wav",
+			"position":[50,20]
+		},
+		{
+			"name":"s2",
+			"file":"./data/18_kibitaki.wav",
+			"position":[50,0]
+		},
+		{
+			"name":"s3",
+			"file":"./data/63_uguisu.wav",
+			"position":[50,-20]
+		}
+	]
+}
