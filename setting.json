@@ -1,33 +1,363 @@
 {
-	"mics":[
-		{
-			"name":"_m1",
-			"position":[-2.886751345948129, 5]
-		},
-		{
-			"name":"_m2",
-			"position":[-2.886751345948129, -5]
-		},
-		{
-			"name":"_m3",
-			"position":[5.773502691896258, 0]
-		}
-	],
-	"sources":[
-		{
-			"name":"s1",
-			"file":"./data/11_sendaimushikui.wav",
-			"position":[50,20]
-		},
-		{
-			"name":"s2",
-			"file":"./data/18_kibitaki.wav",
-			"position":[50,0]
-		},
-		{
-			"name":"s3",
-			"file":"./data/63_uguisu.wav",
-			"position":[50,-20]
-		}
-	]
+    "mics": [
+        {
+            "name": "_m1",
+            "position": [
+                0,
+                0
+            ]
+        }
+    ],
+    "sources": [
+        {
+            "channel": 0,
+            "file": "./data/ca6/CAVI017.wav",
+            "name": "s0",
+            "position": [
+                10.0,
+                0.0
+            ],
+            "start_time": 0.0
+        },
+        {
+            "channel": 0,
+            "file": "./data/ca6/CAVI002.wav",
+            "name": "s1",
+            "position": [
+                10.0,
+                0.0
+            ],
+            "start_time": 2.36175
+        },
+        {
+            "channel": 0,
+            "file": "./data/ca6/CAVI004.wav",
+            "name": "s2",
+            "position": [
+                10.0,
+                0.0
+            ],
+            "start_time": 4.7988125
+        },
+        {
+            "channel": 0,
+            "file": "./data/ca6/CAVI009.wav",
+            "name": "s3",
+            "position": [
+                10.0,
+                0.0
+            ],
+            "start_time": 7.2220625
+        },
+        {
+            "channel": 0,
+            "file": "./data/ca6/CAVI010.wav",
+            "name": "s4",
+            "position": [
+                10.0,
+                0.0
+            ],
+            "start_time": 9.399125
+        },
+        {
+            "channel": 0,
+            "file": "./data/ca6/CAVI015.wav",
+            "name": "s5",
+            "position": [
+                10.0,
+                0.0
+            ],
+            "start_time": 11.5761875
+        },
+        {
+            "channel": 0,
+            "file": "./data/ca6/CAVI006.wav",
+            "name": "s6",
+            "position": [
+                10.0,
+                0.0
+            ],
+            "start_time": 13.783999999999999
+        },
+        {
+            "channel": 0,
+            "file": "./data/ca6/CAVI013.wav",
+            "name": "s7",
+            "position": [
+                10.0,
+                0.0
+            ],
+            "start_time": 16.0841875
+        },
+        {
+            "channel": 0,
+            "file": "./data/ca6/CAVI008.wav",
+            "name": "s8",
+            "position": [
+                10.0,
+                0.0
+            ],
+            "start_time": 18.415125
+        },
+        {
+            "channel": 0,
+            "file": "./data/ca6/SPTO015.wav",
+            "name": "s9",
+            "position": [
+                -10.0,
+                1.2246467991473533e-15
+            ],
+            "start_time": 0.0
+        },
+        {
+            "channel": 0,
+            "file": "./data/ca6/SPTO005.wav",
+            "name": "s10",
+            "position": [
+                -10.0,
+                1.2246467991473533e-15
+            ],
+            "start_time": 3.31625
+        },
+        {
+            "channel": 0,
+            "file": "./data/ca6/SPTO003.wav",
+            "name": "s11",
+            "position": [
+                -10.0,
+                1.2246467991473533e-15
+            ],
+            "start_time": 6.4745625
+        },
+        {
+            "channel": 0,
+            "file": "./data/ca6/SPTO016.wav",
+            "name": "s12",
+            "position": [
+                -10.0,
+                1.2246467991473533e-15
+            ],
+            "start_time": 9.317
+        },
+        {
+            "channel": 0,
+            "file": "./data/ca6/SPTO001.wav",
+            "name": "s13",
+            "position": [
+                -10.0,
+                1.2246467991473533e-15
+            ],
+            "start_time": 13.265
+        },
+        {
+            "channel": 0,
+            "file": "./data/ca6/SPTO004.wav",
+            "name": "s14",
+            "position": [
+                -10.0,
+                1.2246467991473533e-15
+            ],
+            "start_time": 16.265375
+        },
+        {
+            "channel": 0,
+            "file": "./data/ca6/SPTO013.wav",
+            "name": "s15",
+            "position": [
+                -10.0,
+                1.2246467991473533e-15
+            ],
+            "start_time": 19.18675
+        },
+        {
+            "channel": 0,
+            "file": "./data/ca6/PSFL002.wav",
+            "name": "s16",
+            "position": [
+                10.0,
+                0.0
+            ],
+            "start_time": 28.877562500000003
+        },
+        {
+            "channel": 0,
+            "file": "./data/ca6/PSFL006.wav",
+            "name": "s17",
+            "position": [
+                10.0,
+                0.0
+            ],
+            "start_time": 31.686062500000002
+        },
+        {
+            "channel": 0,
+            "file": "./data/ca6/PSFL005.wav",
+            "name": "s18",
+            "position": [
+                10.0,
+                0.0
+            ],
+            "start_time": 33.680375000000005
+        },
+        {
+            "channel": 0,
+            "file": "./data/ca6/PSFL003.wav",
+            "name": "s19",
+            "position": [
+                10.0,
+                0.0
+            ],
+            "start_time": 35.7619375
+        },
+        {
+            "channel": 0,
+            "file": "./data/ca6/PSFL001.wav",
+            "name": "s20",
+            "position": [
+                10.0,
+                0.0
+            ],
+            "start_time": 43.5138125
+        },
+        {
+            "channel": 0,
+            "file": "./data/ca6/PSFL004.wav",
+            "name": "s21",
+            "position": [
+                10.0,
+                0.0
+            ],
+            "start_time": 45.682625
+        },
+        {
+            "channel": 0,
+            "file": "./data/ca6/OCWA001.wav",
+            "name": "s22",
+            "position": [
+                -10.0,
+                1.2246467991473533e-15
+            ],
+            "start_time": 28.877562500000003
+        },
+        {
+            "channel": 0,
+            "file": "./data/ca6/OCWA006.wav",
+            "name": "s23",
+            "position": [
+                -10.0,
+                1.2246467991473533e-15
+            ],
+            "start_time": 32.3680625
+        },
+        {
+            "channel": 0,
+            "file": "./data/ca6/OCWA002.wav",
+            "name": "s24",
+            "position": [
+                -10.0,
+                1.2246467991473533e-15
+            ],
+            "start_time": 35.507312500000005
+        },
+        {
+            "channel": 0,
+            "file": "./data/ca6/OCWA005.wav",
+            "name": "s25",
+            "position": [
+                -10.0,
+                1.2246467991473533e-15
+            ],
+            "start_time": 38.705062500000004
+        },
+        {
+            "channel": 0,
+            "file": "./data/ca6/OCWA003.wav",
+            "name": "s26",
+            "position": [
+                -10.0,
+                1.2246467991473533e-15
+            ],
+            "start_time": 42.429750000000006
+        },
+        {
+            "channel": 0,
+            "file": "./data/ca6/OCWA004.wav",
+            "name": "s27",
+            "position": [
+                -10.0,
+                1.2246467991473533e-15
+            ],
+            "start_time": 45.5104375
+        },
+        {
+            "channel": 0,
+            "file": "./data/ca6/NAWA005.wav",
+            "name": "s28",
+            "position": [
+                10.0,
+                0.0
+            ],
+            "start_time": 57.75512500000001
+        },
+        {
+            "channel": 0,
+            "file": "./data/ca6/NAWA002.wav",
+            "name": "s29",
+            "position": [
+                10.0,
+                0.0
+            ],
+            "start_time": 62.03425000000001
+        },
+        {
+            "channel": 0,
+            "file": "./data/ca6/NAWA001.wav",
+            "name": "s30",
+            "position": [
+                10.0,
+                0.0
+            ],
+            "start_time": 66.62212500000001
+        },
+        {
+            "channel": 0,
+            "file": "./data/ca6/NAWA006.wav",
+            "name": "s31",
+            "position": [
+                10.0,
+                0.0
+            ],
+            "start_time": 72.34225
+        },
+        {
+            "channel": 0,
+            "file": "./data/ca6/BHGR006.wav",
+            "name": "s32",
+            "position": [
+                -10.0,
+                1.2246467991473533e-15
+            ],
+            "start_time": 57.75512500000001
+        },
+        {
+            "channel": 0,
+            "file": "./data/ca6/BHGR005.wav",
+            "name": "s33",
+            "position": [
+                -10.0,
+                1.2246467991473533e-15
+            ],
+            "start_time": 65.257625
+        },
+        {
+            "channel": 0,
+            "file": "./data/ca6/BHGR001.wav",
+            "name": "s34",
+            "position": [
+                -10.0,
+                1.2246467991473533e-15
+            ],
+            "start_time": 73.846
+        }
+    ]
 }

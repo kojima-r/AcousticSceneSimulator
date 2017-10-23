@@ -3,11 +3,68 @@ from SimMch.sim_tf import apply_tf
 import SimMch.simmch
 from SimMch.HARK_TF_Parser.read_mat import read_hark_tf
 from SimMch.HARK_TF_Parser.read_param import read_hark_tf_param
+from scipy import hamming
 import os
+import os.path
 import sys
 import numpy as np
 import json
 import math
+import Image
+
+out_tf_label_flag=False
+
+def to_img(array):
+	return Image.fromarray(np.uint8(array))
+def from_img(img):
+	arr = np.asarray(img)
+	arr.flags.writeable = True
+	return arr
+def loadImgMat(filename):
+	img = Image.open(filename)
+	return from_img(img)
+def saveImgMat(filename,mat):
+	l=np.min(mat)
+	h=np.max(mat)
+	img=to_img((1.0-(mat-l)/h)*255)
+	img.save(filename)
+
+def load_label(filename,mapping):
+	label=loadImgMat(filename)
+	print "[load]",filename
+	ret_label=np.zeros((label.shape[0],label.shape[1]))
+	for i in xrange(label.shape[0]):
+		for j in xrange(label.shape[1]):
+			k=tuple(label[i,j].tolist()[0:3]) 
+			if not k in mapping:
+				v=len(mapping)
+				mapping[k]=v
+				ret_label[i,j]=v
+			else:
+				v=mapping[k]
+				ret_label[i,j]=v
+	return np.flipud(ret_label)
+
+def save_spectrogram(filename,wav,fftLen,step):
+	win = hamming(fftLen)
+	spec=SimMch.simmch.stft(wav,win,step)
+	x=(np.absolute(spec[:,:spec.shape[1]/2+1].T))
+	print "[INFO]",x.shape
+	print "[save]",filename
+	saveImgMat(filename,np.flipud(x))
+
+def label_merge(org_mat,mat):
+	conflict_cnt=0
+	#for i in xrange(mat.shape[0]):
+		#	for j in xrange(mat.shape[1]):
+	for i in xrange(org_mat.shape[0]):
+		for j in xrange(org_mat.shape[1]):
+			if org_mat[i,j]==0:
+				org_mat[i,j]=mat[i,j]
+			else:
+				conflict_cnt+=1
+	if conflict_cnt>0:
+		print "label conflict (count=%d)"%(conflict_cnt)
 
 if __name__ == "__main__":
 	dataset_config={}
@@ -16,6 +73,7 @@ if __name__ == "__main__":
 	step = fftLen/4
 	scale=32767.0
 	output_dir="data_sim/"
+	output_label_dir="label/"
 	deg_step=30
 	alpha=0.1
 	f = open("setting.json")
@@ -24,6 +82,8 @@ if __name__ == "__main__":
 	if len(sys.argv)<2:
 		print >>sys.stderr,"[usage] python build_sim_dataset.py <tf.zip: transfer function file>"
 		quit()
+	if len(sys.argv)>=3:
+		alpha=float(sys.argv[2])
 	tf_filename=sys.argv[1]
 	enabled_wav_save=False
 	## read tf 
@@ -35,14 +95,23 @@ if __name__ == "__main__":
 	dataset_wavname=[]
 	dataset_wav=[]
 	dataset_deg=[]
+	label_mapping={(0, 0, 0): 0}
 	for mic in data["mics"]:
 		recorded_wav=[]
+		recorded_label=[]
 		for src in data["sources"]:
 			m=np.array(mic["position"])
 			s=np.array(src["position"])
+			ch=0
+			if "channel" in src:
+				ch=int(src["channel"])
+			start_time_sec=0
+			if "start_time" in src:
+				start_time_sec=float(src["start_time"])
 			v = s-m
 			theta=np.arctan2(v[1],v[0])-math.pi/2.0
 			r= np.linalg.norm(m-s)
+			print "start_time=",start_time_sec
 			print "r=",r
 			print "theta=",theta
 			wav_filename=src["file"]
@@ -52,19 +121,42 @@ if __name__ == "__main__":
 			wav=wav_data["wav"]/scale
 			fs=wav_data["framerate"]
 			nch=wav_data["nchannels"]
-			mono_wavdata = wav[0,:]
+			step_sec=step*1.0/fs
+			if ch >= wav.shape[0]:
+				print >>sys.stderr,"Error: ch=%d is out of range"%(ch)
+				quit()
+			mono_wavdata = wav[ch,:]
 			src_theta=theta
 			## apply TF
 			src_index=SimMch.simmch.nearest_direction_index(tf_config,src_theta)
+			print "... applying tf (theta,index)=(%f,%d)"%(src_theta,src_index)
 			if not src_index in tf_config["tf"]:
 				print >>sys.stderr, "Error: tf index",src_index,"does not exist in TF file"
 				quit()
+			
 			mch_wavdata=apply_tf(mono_wavdata,fftLen, step,tf_config,src_index)
 			a=np.max(mch_wavdata)
 			mch_wavdata=mch_wavdata/a
 			print "# simulation: %s, direction of arrival: %f"%(wav_filename,theta)
 			#
-			recorded_wav.append(mch_wavdata)
+			print "# wav data :",mch_wavdata.shape
+			#padding_length=int(np.round(start_time_sec/step_sec))
+			padding_length=int(np.round(start_time_sec*fs))
+			print "# padding samples: ",padding_length
+			padding=np.zeros((mch_wavdata.shape[0],padding_length),dtype='float')
+			#mch_wavdata_with_padding=np.c_[mch_wavdata,padding]
+			mch_wavdata_with_padding=np.c_[padding,mch_wavdata]
+			#
+			recorded_wav.append(mch_wavdata_with_padding)
+			## load label & save spectrogram
+			label_mat=None
+			if "tf_label" in src and out_tf_label_flag:
+				filename=output_dir+src["tf_label"]
+				save_spectrogram(filename,mono_wavdata,fftLen,step)
+				filename=output_label_dir+src["tf_label"]
+				if os.path.exists(filename):
+					label_mat=load_label(filename,label_mapping).T
+					recorded_label.append((src_theta,padding_length,label_mat))
 		##
 		if(len(recorded_wav)>0):
 			nch=recorded_wav[0].shape[0]
@@ -81,31 +173,37 @@ if __name__ == "__main__":
 			mch_noise=make_white_noise(nch,length,fftLen,step)
 			a=np.max(mch_noise)
 			mch_noise=mch_noise/a
-
 			## mix noise and m-ch wav
-			mix_wavdata=mix_wavdata*(1-alpha)+mch_noise*alpha
+			mix_wavdata=mix_wavdata*(1-alpha)+mch_noise[:,:wav_len]*alpha
+			### make label data
+			if len(recorded_label)>0:
+				dir_num=len(tf_config["tf"].items())
+				label_data=np.zeros((length,dir_num,fftLen/2+1))
+				for src_theta,pad,mat in recorded_label:
+					d=10.0/180.0*math.pi
+					dir_indeces=SimMch.simmch.range_direction_index(tf_config,src_theta,d)
+					pad_length=((pad-(fftLen-step))-1)/step+1
+					for index in dir_indeces:
+						#label_data[pad_length:pad_length+mat.shape[0],index,:]+=mat
+						label_merge(label_data[pad_length:pad_length+mat.shape[0],index,:],mat)
+
+				print "# label data :",label_data.shape
+				print "# labeled elements :%d/%d"%(np.count_nonzero(label_data),np.prod(label_data.shape))
+				output_label_filename=output_label_dir+"label"+mic["name"]+".npy"
+				np.save(output_label_filename,label_data)
+				print "[SAVE]",output_label_filename
 			## save
 			output_filename="./data_sim/test"+mic["name"]+".wav"
 			print "[SAVE]",output_filename
-			SimMch.simmch.save_mch_wave(mix_wavdata*scale,output_filename)
+			SimMch.simmch.save_mch_wave(mix_wavdata*scale,output_filename)	
+	###
+	print label_mapping
+	inv_label_mapping={}
+	for k,v in label_mapping.items():
+		inv_label_mapping[v]=k
 
-#
-			## make noise
-			#nsamples=wav.shape[1]
-			#length=((nsamples-(fftLen-step))-1)/step+1
-			#mch_noise=make_white_noise(nch,length,fftLen,step)
-
-			## mix noise and m-ch wav
-			#mixed_wavdata=mch_wavdata*(1-alpha)+mch_noise*alpha
-#
-#			dataset_wavname.append(name)
-#			dataset_wav.append(mixed_wavdata)
-#			dataset_deg.append(deg)
-			#if enabled_wav_save:
-			#	## save data
-			#	output_filename=output_dir+"/"+name+"_"+str(deg)+".wav"
-			#	print "[SAVE]",output_filename
-			#	SimMch.simmch.save_mch_wave(mixed_wavdata*scale,output_filename)
-	#print "[SAVE] dataset.npy"
-	#np.save("dataset.npy",obj)
+	output_label_mapping=output_label_dir+"label_mapping.json"
+	fp = open(output_label_mapping,"w")
+	json.dump(inv_label_mapping, fp)
+	print "[SAVE]",output_label_mapping
 
