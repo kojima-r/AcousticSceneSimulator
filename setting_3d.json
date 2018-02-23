@@ -25,27 +25,29 @@
             ],
             "start_time": 0.0
         },
-        {
+		{
             "channel": 0,
-            "file": "./data/ca6/SPTO015.wav",
-            "name": "s9",
-            "position": [
-                -10.0,
-                1.2246467991473533e-15,
-				0.0
-            ],
-            "start_time": 0.0
-        },
-        {
-            "channel": 0,
-            "file": "./data/ca6/PSFL005.wav",
-            "name": "s18",
+            "file": "./data/ca6/CAVI017.wav",
+            "name": "s0",
             "position": [
                 10.0,
                 0.0,
-				-5.0
+				5.0
             ],
-            "start_time": 0.68
+            "start_time": 2.0
+        },
+		{
+            "channel": 0,
+            "file": "./data/ca6/CAVI017.wav",
+            "name": "s0",
+            "position": [
+                10.0,
+                0.0,
+				5.0
+            ],
+            "start_time": 4.0
         }
+
+
     ]
 }

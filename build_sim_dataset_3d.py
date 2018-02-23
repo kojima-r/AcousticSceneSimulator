@@ -111,7 +111,7 @@ if __name__ == "__main__":
 			v = s-m
 			r= np.linalg.norm(m-s)
 			print "start_time=",start_time_sec
-			print "r=",r
+			print "distance=",r
 			wav_filename=src["file"]
 			## read wav file
 			print "... reading", wav_filename
@@ -127,8 +127,10 @@ if __name__ == "__main__":
 			src_v=v
 			## apply TF
 			src_index=SimMch.simmch.nearest_position_index(tf_config,src_v)
-			print "... applying :",src_v
-			print "... applying tf (index)=(%d)"%(src_index)
+			print "... searching position :",src_v
+			tf_v=tf_config["tf"][src_index]["position"]
+			print "... tf position :",tf_v
+			print "... applying tf index=(%d)"%(src_index)
 			if not src_index in tf_config["tf"]:
 				print >>sys.stderr, "Error: tf index",src_index,"does not exist in TF file"
 				quit()
