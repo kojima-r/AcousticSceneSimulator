@@ -1,0 +1,368 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<!-- Force latest IE rendering engine or ChromeFrame if installed -->
+<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"><![endif]-->
+<meta charset="utf-8">
+<title>Acoustic Scene Simulator</title>
+<meta name="description" content="Acoustic simulator with multiple sound sources and multiple microphone arrays">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Bootstrap styles -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<!-- Generic page styles -->
+<link rel="stylesheet" href="static/css/style.css">
+<!-- CSS to style the file input field as button and adjust the Bootstrap progress bars -->
+<link rel="stylesheet" href="static/css/jquery.fileupload.css">
+<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
+<style>
+  .mic { width: 50px; height: 50px; padding: 0.5em; background-color: #f00;}
+  .mic_id { width: 50px; height: 13px;}
+  .mic_x { width: 50px; height: 13px;}
+  .mic_y { width: 50px; height: 13px;}
+  .src { width: 50px; height: 50px; padding: 0.5em; background-color: #0f0;}
+  .src_id { width: 50px; height: 13px;}
+  .src_x { width: 50px; height: 13px;}
+  .src_y { width: 50px; height: 13px;}
+ 
+  #field_area { width: 500px; height: 500px; padding: 0.5em; background-color: #ccc;}
+</style>
+</head>
+<body>
+<!--
+<div class="navbar navbar-default navbar-fixed-top">
+	<div class="container">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-fixed-top .navbar-collapse">
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			<a class="navbar-brand" href="https://github.com/blueimp/jQuery-File-Upload">jQuery File Upload</a>
+		</div>
+		<div class="navbar-collapse collapse">
+			<ul class="nav navbar-nav">
+				<li><a href="https://github.com/blueimp/jQuery-File-Upload/tags">Download</a></li>
+				<li><a href="https://github.com/blueimp/jQuery-File-Upload">Source Code</a></li>
+				<li><a href="https://github.com/blueimp/jQuery-File-Upload/wiki">Documentation</a></li>
+				<li><a href="https://blueimp.net">&copy; Sebastian Tschan</a></li>
+			</ul>
+		</div>
+	</div>
+</div>
+-->
+<div class="container">
+	<h1>Acoustic Scene Simulator</h1>
+	<ul class="nav nav-tabs">
+		<li class="active"><a href="basic.html">Scene editor</a></li>
+		<li><a href="basic-plus.html">Microphone editor</a></li>
+		<li><a href="index.html">File exploler</a></li>
+	</ul>
+	<br>
+	<!-- The fileinput-button span is used to style the file input field as button -->
+	<span class="btn btn-success fileinput-button">
+		<i class="glyphicon glyphicon-plus"></i>
+		<span>Select files...</span>
+		<input id="tf_fileupload" type="file" name="files[]" multiple>
+	</span>
+	<br>
+	<br>
+	<div id="progress" class="progress">
+		<div class="progress-bar progress-bar-success"></div>
+	</div>
+	<!-- The container for the uploaded files -->
+	<div id="files" class="files"></div>
+	<br>
+	<div>
+	<button id="button_run">run</button>
+	<button id="button_status">status</button>
+	</div>
+	<div id="dialog" class="jquery-ui-dialog" title="wait for processing" style="display:none;"><textarea id="dialog_log" name="log" rows="10" cols="42">
+</textarea></div>
+
+
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<h3 class="panel-title">Demo Notes</h3>
+		</div>
+		<div class="panel-body">
+			<div id="field_area">
+			
+			</div>
+			<div id="info_area">
+			
+			</div>
+			<div id="control_area">
+				<button id="button_add_mic">add mic</button>
+				<button id="button_add_src">add source</button>
+				<button id="button_setting">setting json</button>
+			</div>
+		</div>
+	</div>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script> 
+<script src="static/js/vendor/jquery.ui.widget.js"></script>
+<script src="static/js/jquery.iframe-transport.js"></script>
+<script src="static/js/jquery.fileupload.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script>
+/*jslint unparam: true */
+/*global window, $ */
+$(function () {
+	'use strict';
+	// Change this to the location of your server-side upload handler:
+	var url = '/upload/tf';
+	$('#tf_fileupload').fileupload({
+		url: url,
+		dataType: 'multipart/form-data',
+		done: function (e, data) {
+			$.each(data.result.files, function (index, file) {
+				$('<p/>').text(file.name).appendTo('#files');
+			});
+		},
+		progressall: function (e, data) {
+			var progress = parseInt(data.loaded / data.total * 100, 10);
+			$('#progress .progress-bar').css(
+				'width',
+				progress + '%'
+			);
+		}
+	}).prop('disabled', !$.support.fileInput)
+		.parent().addClass($.support.fileInput ? undefined : 'disabled');
+	//
+	function check_status(){
+		$.getJSON('/status/1234').done(
+		function(data){
+			console.log(data);
+		}).fail(function(err){
+			console.log(err);
+		})
+	}
+	$( "#dialog" ).dialog({ autoOpen: false,
+		height: 300,
+       		width: 450,
+	});
+	$('#button_run').on('click', function() {
+		$.getJSON('/run/sim').done(
+		function(data){
+			console.log(data);
+			$( "#dialog" ).dialog( "open" );
+			var id = setInterval(function(){
+				$.getJSON('/status/1234').done(
+				function(data){
+					console.log(data);
+					$("#dialog_log").text(data["log"])
+					var psconsole = $('#dialog_log');
+					psconsole.scrollTop(
+						psconsole[0].scrollHeight - psconsole.height()
+					);
+					if(data["status"]!="running"){
+						clearInterval(id);
+						$( "#dialog" ).dialog( "close" );
+						if(data["file"]){
+							location.href=data["file"]
+						}
+					}
+				}).fail(function(err){
+					console.log(err);
+				})
+			}, 1000);
+		}).fail(function(err){
+			console.log(err);
+		})
+	});
+	$('#button_status').on('click', function() {
+		check_status();
+	});
+	////
+	var mic_info={}
+	var src_info={}
+	var list_wav=null
+	var list_tf=null
+	var mic_counter=1
+	function make_src_text(m,x,y){
+		var text='<div class="src_id">'+m+'</div>';
+		text+='<div class="src_x">'+Math.floor(x)+'</div>'
+		text+='<div class="src_y">'+Math.floor(y)+'</div>'
+		return text
+	}
+	function make_mic_text(m,x,y){
+		var text='<div class="mic_id">'+m+'</div>';
+		text+='<div class="mic_x">'+Math.floor(x)+'</div>'
+		text+='<div class="mic_y">'+Math.floor(y)+'</div>'
+		return text
+	}
+	function update_src_info(m){
+		$("#info_area").empty()
+		$.each(src_info[m],function(k,v){
+			if(k=="name"||k=="position"){
+				$("#info_area").append('<div>'+k+':'+v+'</div><br>');
+			}else if(k=="file"){
+				var t ='<select id="info_file" name="'+k+'"><option selected>'+v+'</option></select>';
+				$("#info_area").append('<div>'+k+':'+t+'</div><br>');
+			}else{
+				var t ='<input type="text" name="'+k+'" value="'+v+'" />';
+				$("#info_area").append('<div>'+k+':'+t+'</div><br>');
+			}
+		});
+		$("#info_area input").on('input', function(event) {
+			var value = $(this).val();
+			var name = $(this).attr("name");
+			src_info[m][name]=value
+		});
+		$("#info_area select").on('input', function(event) {
+			var value = $(this).val();
+			var name = $(this).attr("name");
+			mic_info[m][name]=value
+		});
+		$.each(list_wav,function(i,el){
+			$("#info_area #info_file").append("<option>"+el+"</option>");
+		})
+	}
+	function update_mic_info(m){
+		$("#info_area").empty()
+		$.each(mic_info[m],function(k,v){
+			if(k=="name"||k=="position"){
+				$("#info_area").append('<div>'+k+':'+v+'</div><br>');
+			}else if(k=="tf"){
+				var t ='<select id="info_tf_file" name="'+k+'"><option selected>'+v+'</option></select>';
+				$("#info_area").append('<div>'+k+':'+t+'</div><br>');
+			}else{
+				var t ='<input type="text" name="'+k+'" value="'+v+'" />';
+				$("#info_area").append('<div>'+k+':'+t+'</div><br>');
+			}
+		});
+		$("#info_area input").on('input', function(event) {
+			var value = $(this).val();
+			var name = $(this).attr("name");
+			mic_info[m][name]=value
+		});
+		$("#info_area select").on('input', function(event) {
+			var value = $(this).val();
+			var name = $(this).attr("name");
+			mic_info[m][name]=value
+		});
+		$.each(list_tf,function(i,el){
+			$("#info_area #info_tf_file").append("<option>"+el+"</option>");
+		})
+	}
+	function update_list(){
+		$.getJSON('/list/wav').done(
+			function(data){
+				list_wav=data;
+				console.log(data);
+			}).fail(function(err){
+				console.log(err);
+			})
+		$.getJSON('/list/tf').done(
+			function(data){
+				list_tf=data;
+				console.log(data);
+			}).fail(function(err){
+				console.log(err);
+			})
+	}
+	$('#button_add_mic').on('click', function() {
+		var m=mic_counter
+		mic_counter+=1
+		$("#field_area").append('<div class="mic" id="mic'+m+'"></div>');
+		$('#mic'+m).each(function() {
+			$(this).on('click', function() {
+				var m=parseInt($(this).children(".mic_id").text())
+				update_mic_info(m)
+			});
+			$(this).draggable( {
+				containment: '#field_area',
+				scroll: false,
+				drag: function(event, ui) {
+					var m=parseInt($(this).children(".mic_id").text())
+					update_mic_info(m)
+					var o=$(this).offset();
+					var x=o.left
+					var y=o.top
+					mic_info[m]["position"]=[x,y]
+					$(this).html(make_mic_text(m,x,y))
+				}
+			});
+		});
+		var o=$(this).offset();
+		var x=o.left
+		var y=o.top
+		mic_info[m]={"name":"mic"+m,"position":[x,y],"tf":""}
+		$('#mic'+m).html(make_mic_text(m,x,y))
+		update_list();
+	});
+	var src_counter=1
+	$('#button_add_src').on('click', function() {
+		var m=src_counter
+		src_counter+=1
+		$("#field_area").append('<div class="src" id="src'+m+'"></div>');
+		$('#src'+m).each(function() {
+			$(this).on('click', function() {
+				var m=parseInt($(this).children(".src_id").text())
+				update_src_info(m)
+			});
+			$(this).draggable( {
+				containment: '#field_area',
+				scroll: false,
+				drag: function(event, ui) {
+					var m=parseInt($(this).children(".src_id").text())
+					update_src_info(m)
+					var o=$(this).offset();
+					var x=o.left
+					var y=o.top
+					src_info[m]["position"]=[x,y]
+					$(this).html(make_src_text(m,x,y))
+				}
+			});
+		});
+		var o=$(this).offset();
+		var x=o.left
+		var y=o.top
+		src_info[m]={
+			"name":"src_"+m,
+			"position":[x,y],
+			"channel": 0,
+			"file": "./data/CAVI017.wav",
+            		"start_time": 0.0
+			}
+		$('#src'+m).html(make_src_text(m,x,y))
+		update_list();
+	});
+	////
+	$('#button_setting').on('click', function() {
+		var mics=[]
+		var sources=[]
+		$('.src').each(function() {
+			var src_id=-1
+			var mm=$(this).children(".src_id").text()
+			var m=parseInt(mm)
+			sources.push(src_info[m])
+		});
+		
+		$('.mic').each(function() {
+			var mic_id=-1
+			var mm=$(this).children(".mic_id").text()
+			var m=parseInt(mm)
+			mics.push(mic_info[m])
+		});
+		var data={"env":{"noise":0.1},"mics":mics,"sources":sources}
+		$.ajax({
+			type:"post",
+			url:"/upload/setting",
+			data:JSON.stringify(data),
+			contentType: 'application/json',
+			dataType: "json",
+			success: function(json_data) {
+				console.log(json_data)
+				return;
+			},
+			error: function() {
+			    alert("Server Error. Pleasy try again later.");
+			}
+		});
+	});
+});
+</script>
+</body>
+</html>

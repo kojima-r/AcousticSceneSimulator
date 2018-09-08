@@ -10,7 +10,10 @@ import sys
 import numpy as np
 import json
 import math
+import argparse
 from PIL import Image
+import zipfile
+import glob
 
 out_tf_label_flag=False
 
@@ -67,6 +70,25 @@ def label_merge(org_mat,mat):
 		print("label conflict (count=%d)"%(conflict_cnt))
 
 if __name__ == "__main__":
+	parser = argparse.ArgumentParser()
+	parser.add_argument('setting', type=str,
+			help='setting file')
+	parser.add_argument('--alpha', type=float,
+			default=0.1,
+			help='environmental noise rate')
+	parser.add_argument('--tf', type=float,
+			default=None,
+			help='default tf file')
+	parser.add_argument('--zip',
+			action='store_true',
+			help='')
+	parser.add_argument('--id', type=str,
+			default=None,
+			help='id for output file')
+
+	args=parser.parse_args()
+	# config
+
 	dataset_config={}
 	## basic config
 	fftLen = 512
@@ -75,20 +97,20 @@ if __name__ == "__main__":
 	output_dir="data_sim/"
 	output_label_dir="label/"
 	deg_step=30
-	alpha=0.1
-	f = open("setting.json")
+	alpha=args.alpha
+	setting_filename=args.setting
+	f = open(setting_filename)
 	data = json.load(f)
-	print(data)
-	if len(sys.argv)<2:
-		print("[usage] python build_sim_dataset.py <tf.zip: transfer function file>", file=sys.stderr)
-		quit()
-	if len(sys.argv)>=3:
-		alpha=float(sys.argv[2])
-	tf_filename=sys.argv[1]
+	if "noise" in data["env"]:
+		alpha=data["env"]["noise"]
 	enabled_wav_save=False
 	## read tf 
-	print("... reading", tf_filename)
-	tf_default_config=read_hark_tf(tf_filename)
+	if args.tf is not None:
+		tf_filename=args.tf
+		print("... reading", tf_filename)
+		tf_default_config=read_hark_tf(tf_filename)
+	else:
+		tf_default_config=None
 	#mic_pos=read_hark_tf_param(tf_filename)
 	#print "# mic positions  :",mic_pos
 	
@@ -97,7 +119,7 @@ if __name__ == "__main__":
 	dataset_deg=[]
 	label_mapping={(0, 0, 0): 0}
 	for mic in data["mics"]:
-		for "tf" in mic:
+		if "tf" in mic:
 			tf_filename=mic["tf"]
 			print("... reading", tf_filename)
 			tf_config=read_hark_tf(tf_filename)
@@ -199,7 +221,7 @@ if __name__ == "__main__":
 				np.save(output_label_filename,label_data)
 				print("[SAVE]",output_label_filename)
 			## save
-			output_filename="./data_sim/test"+mic["name"]+".wav"
+			output_filename="./data_sim/"+mic["name"]+".wav"
 			print("[SAVE]",output_filename)
 			SimMch.simmch.save_mch_wave(mix_wavdata*scale,output_filename)	
 	###
@@ -212,4 +234,16 @@ if __name__ == "__main__":
 	fp = open(output_label_mapping,"w")
 	json.dump(inv_label_mapping, fp)
 	print("[SAVE]",output_label_mapping)
-
+	###
+	if args.zip:
+		output_filename="static/data_sim.zip"
+		arc_path="data_sim/"
+		if args.id:
+			output_filename='static/'+args.id+".zip"
+			arc_path=args.id+"/"
+		
+		with zipfile.ZipFile(output_filename, 'w', compression=zipfile.ZIP_DEFLATED) as new_zip:
+			for el in glob.glob("data_sim/*"):
+				name=os.path.basename(el)
+				new_zip.write(el,arcname=arc_path+name)
+				

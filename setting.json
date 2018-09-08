@@ -1,11 +1,15 @@
 {
+    "env": {
+        "noise":0.1
+    },
     "mics": [
         {
             "name": "_m1",
             "position": [
                 0,
                 0
-            ]
+            ],
+            "tf":"tf/tamago_rectf.zip"
         }
     ],
     "sources": [
